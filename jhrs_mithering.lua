@@ -8,59 +8,106 @@
 
 -- globals. Ugh.
 
-m_red = 0
-m_green = 0
-m_blue = 0
+m1_red = 0
+m1_green = 0
+m1_blue = 0
 
-red_v = 0
-green_v = 0
-blue_v = 0
+red_v1 = 0
+green_v1 = 0
+blue_v1 = 0
+
+m2_red = 0
+m2_green = 0
+m2_blue = 0
+
+red_v2 = 0
+green_v2 = 0
+blue_v2 = 0
 
 direction = 1
 
-function fade_leds()
+function fade_leds1()
     if direction == 1 then
-        red_v = red_v + 25
-        if (m_red - red_v) < 25 then
-            red_v = 0
+        red_v1 = red_v1 + 25
+        if (m1_red - red_v1) < 25 then
+            red_v1 = 0
         end
-        green_v = green_v + 25
-        if (m_green - green_v) < 25 then
-            green_v = 0
+        green_v1 = green_v1 + 25
+        if (m1_green - green_v1) < 25 then
+            green_v1 = 0
         end  
-        blue_v = blue_v + 25
-        if (m_blue - blue_v) < 25 then
-            blue_v = 0
+        blue_v1 = blue_v1 + 25
+        if (m1_blue - blue_v1) < 25 then
+            blue_v1 = 0
         end
     end
 
     if direction == -1 then
-        red_v = red_v - 25
-        if (red_v - m_red) < 25 then
-            red_v = 1023
+        red_v1 = red_v1 - 25
+        if (red_v1 - m1_red) < 25 then
+            red_v1 = 1023
         end
-        green_v = green_v - 25
-        if (green_v - m_green) < 25 then
-            green_v = 1023
+        green_v1 = green_v1 - 25
+        if (green_v1 - m1_green) < 25 then
+            green_v1 = 1023
         end  
-        blue_v = blue_v - 25
-        if (blue_v - m_blue) < 25 then
-            blue_v = 1023
+        blue_v1 = blue_v1 - 25
+        if (blue_v1 - m1_blue) < 25 then
+            blue_v1 = 1023
         end
     end
 
-    led_s1(red_v,green_v,blue_v)
+    led_s1(red_v1,green_v1,blue_v1)
+end
+
+function fade_leds2()
+    if direction == 1 then
+        red_v2 = red_v2 + 25
+        if (m2_red - red_v2) < 25 then
+            red_v2 = 0
+        end
+        green_v2 = green_v2 + 25
+        if (m2_green - green_v2) < 25 then
+            green_v2 = 0
+        end  
+        blue_v2 = blue_v2 + 25
+        if (m2_blue - blue_v2) < 25 then
+            blue_v2 = 0
+        end
+    end
+
+    if direction == -1 then
+        red_v2 = red_v2 - 25
+        if (red_v2 - m2_red) < 25 then
+            red_v2 = 1023
+        end
+        green_v2 = green_v2 - 25
+        if (green_v2 - m2_green) < 25 then
+            green_v2 = 1023
+        end  
+        blue_v2 = blue_v2 - 25
+        if (blue_v2 - m2_blue) < 25 then
+            blue_v2 = 1023
+        end
+    end
+
+    led_s2(red_v2,green_v2,blue_v2)
 end
     
-    
-
-
 function led_s1(r,g,b)
     -- print("r:"..r.." g:"..g.." b:"..b)
     -- print("Mr:"..m_red.." Mg:"..m_green.." Mb:"..m_blue)
     pwm.setduty(1,r)
     pwm.setduty(2,g)
     pwm.setduty(3,b)
+end
+
+function led_s2(r,g,b)
+    -- print("r:"..r.." g:"..g.." b:"..b)
+    -- print("Mr:"..m_red.." Mg:"..m_green.." Mb:"..m_blue)
+    pwm.setduty(5,r)
+    pwm.setduty(6,g)
+    pwm.setduty(7,b)
 end
 
 
@@ -76,7 +123,14 @@ function main()
     pwm.start(2);
     pwm.setup(3,1000,1023);
     pwm.start(3);
-           
+
+    pwm.setup(5,1000,1023);
+    pwm.start(5);
+    pwm.setup(6,1000,1023);
+    pwm.start(6);
+    pwm.setup(7,1000,1023);
+    pwm.start(7);
+    
     wifi.setmode(wifi.SOFTAP)
     cfg={}
     cfg.ssid="mac_address_blinkenlights" 
@@ -84,7 +138,8 @@ function main()
     wifi.ap.config(cfg) 
     
     tmr.alarm(2,50,tmr.ALARM_AUTO,function()
-        fade_leds()
+        fade_leds1()
+        fade_leds2()
     end)
     
     wifi.eventmon.register(wifi.eventmon.AP_PROBEREQRECVED, function(T) 
@@ -136,14 +191,20 @@ function makeMacPixels() -- make up 8 pixels form a mac
 
     rgbs=split(bestMac,"\:")
     
-    m_red = tonumber(rgbs[3],16)*4
-    m_green = tonumber(rgbs[4],16)*4
-    m_blue = tonumber(rgbs[5],16)*4
+    m1_red = tonumber(rgbs[4],16)*4
+    m1_green = tonumber(rgbs[5],16)*4
+    m1_blue = tonumber(rgbs[6],16)*4
+
+    m2_red = tonumber(rgbs[1],16)*4
+    m2_green = tonumber(rgbs[2],16)*4
+    m2_blue = tonumber(rgbs[3],16)*4
 
     if direction == 1 then
         led_s1(0,0,0)
+        led_s2(0,0,0)
     else
         led_s1(1023,1023,1023)
+        led_s2(1023,1023,1023)
     end
 end
 
